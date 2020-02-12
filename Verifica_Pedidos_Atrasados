@@ -1,0 +1,220 @@
+'PT-BR
+'Programa criado para verificar quais pedidos atrasados vão cair nas datas desejadas (datas essas que podem ser escolhidas pelo usuário)
+'Script feito no VBAScript
+'Usuário preenche a Aba “Pedidos Atrasados” > Seleciona a aba "Plan. Dinamica" > Faz a seleção a partir dos botões existentes
+'EN
+Script created to verify which late orders will expire in the desired dates
+'Created on VBAScript
+" User fill up the tab "Pedidos Atrasados" > Select the tab "Plan. Dinamica" > Make the selection from the existing buttons
+
+Sub selecao_datas()
+
+    'Definição das variaveis   
+    Dim data_inical As String
+    Dim data_final As String
+    Dim linha_final As Integer
+    Dim ultima_linha As Integer
+    Dim linha_atual As Integer
+    Dim linha_atual2 As Integer
+        
+    'Limpa a aba Plan.Dinamica
+    Sheets(2).Select
+    Range("A2:N1048576").ClearContents
+    Range("U1:U11").ClearContents
+    Range("U14:U15").ClearContents
+    
+    'Inputbox perguntando das datas inicias e finais
+    data_inicial = InputBox("Digite a data inicial" + vbCrLf + "Modelo 22/11/2019")
+    data_final = InputBox("Digite a data final" + vbCrLf + "Modelo 22/11/2019")
+    Range("U14") = CDate(data_inicial)
+    Range("U15") = CDate(data_final)
+    
+    'Seleciona a primeira planilha
+    Sheets(1).Select
+    
+    'Determina qual a ultima linha da primeira planilha
+    linha_final = Range("A1048576").End(xlUp).Row
+    
+    'Escolhe a celula com a data do pedido
+    Range("H2").Select
+        Do Until ActiveCell = ""
+        
+            'Determina a linha que estamos usando
+            linha_atual = ActiveCell.Row
+            
+            'Compara a data inicial com a data do pedido
+            If CDate(ActiveCell) >= CDate(data_inicial) Then
+                If CDate(ActiveCell) <= CDate(data_final) Then
+                
+                    'Copia toda a linha
+                    Range("A" & linha_atual, "N" & linha_atual).Copy
+                    
+                    'Escolhe a segunda planilha
+                    Sheets(2).Select
+                    
+                    'Determina a ultima linha preenchida
+                    ultima_linha = Range("A1048576").End(xlUp).Row
+                    
+                    'Copia valores
+                    Range("A" & ultima_linha + 1, "N" & ultima_linha + 1).PasteSpecial xlValues
+                End If
+            End If
+            
+            'Retorna para a primeira planilha
+            Sheets(1).Select
+            
+            'Retorna para a célula que estamos usando
+            Range("H" & linha_atual).Select
+            
+            'Escolhe a planilha debaixo
+            ActiveCell.Offset(1, 0).Select
+        Loop
+
+'Selecao da planilha final
+Sheets(2).Select
+Range("A2").Select
+MsgBox "Macro Finalizada", vbInformation
+
+End Sub
+
+Sub somatorio_pedidos()
+    
+    'definindo as variaveis
+    Dim soma As Integer
+    Dim contador As Integer
+    
+    'Seleciona a primeira celula
+    Sheets(2).Select
+    Range("A2").Select
+        Do Until ActiveCell = ""
+            'Incrementa o contador
+            contador = contador + 1
+            'Desce para a celula abaixo
+            ActiveCell.Offset(1, 0).Select
+        Loop
+        'Coloca o valor na celula
+        Range("U1") = contador
+        'Range("Q1").Select
+        MsgBox "Somatório Realizado", vbInformation
+    
+End Sub
+
+Sub somatorio_compradores()
+    
+    'definindo as variaveis
+    Dim contador_Alex As Integer
+    Dim contador_Dilo As Integer
+    Dim contador_Felipe As Integer
+    Dim contador_Marcelo As Integer
+    Dim contador_Braulio As Integer
+    Dim contador_Leticia As Integer
+    Dim contador_Fernando As Integer
+    Dim contador_Gabriel As Integer
+    Dim contador_Rudnei As Integer
+    Dim contador_ze As Integer
+    Dim contador_Cleber As Integer
+    
+    'Seleciona a segunda planilha
+    Sheets(2).Select
+    Range("M2").Select
+    Do Until ActiveCell = ""
+        'Incrementa todos os contadores
+        If ActiveCell = "005" Then
+            contador_Alex = contador_Alex + 1
+            ActiveCell.Offset(1, 0).Select
+            
+            ElseIf ActiveCell = "012" Then
+                contador_Dilo = contador_Dilo + 1
+                ActiveCell.Offset(1, 0).Select
+            
+                ElseIf ActiveCell = "013" Then
+                    contador_Felipe = contador_Felipe + 1
+                    ActiveCell.Offset(1, 0).Select
+            
+                    ElseIf ActiveCell = "014" Then
+                        contador_Marcelo = contador_Marcelo + 1
+                        ActiveCell.Offset(1, 0).Select
+            
+                        ElseIf ActiveCell = "016" Then
+                            contador_Braulio = contador_Braulio + 1
+                            ActiveCell.Offset(1, 0).Select
+            
+                            ElseIf ActiveCell = "017" Then
+                                contador_Leticia = contador_Leticia + 1
+                                ActiveCell.Offset(1, 0).Select
+            
+                                ElseIf ActiveCell = "018" Then
+                                    contador_Fernando = contador_Fernando + 1
+                                    ActiveCell.Offset(1, 0).Select
+            
+                                        ElseIf ActiveCell = "019" Then
+                                            contador_Gabriel = contador_Gabriel + 1
+                                            ActiveCell.Offset(1, 0).Select
+                                            
+                                                ElseIf ActiveCell = "002" Then
+                                                    contador_ze = contador_ze + 1
+                                                    ActiveCell.Offset(1, 0).Select
+                                            
+                                                        ElseIf ActiveCell = "199" Then
+                                                            contador_Cleber = contador_Cleber + 1
+                                                            ActiveCell.Offset(1, 0).Select
+            
+                                                                ElseIf ActiveCell = "914" Then
+                                                                    contador_Rudnei = contador_Rudnei + 1
+                                                                    ActiveCell.Offset(1, 0).Select
+End If
+Loop
+    'Escreve a quantidade de linhas atrasadas
+    Range("U2") = contador_Alex
+    Range("U3") = contador_Dilo
+    Range("U4") = contador_Felipe
+    Range("U5") = contador_Marcelo
+    Range("U6") = contador_Braulio
+    Range("U7") = contador_Leticia
+    Range("U8") = contador_Fernando
+    Range("U9") = contador_Gabriel
+    Range("U10") = contador_Rudnei
+    Range("U11") = contador_Cleber
+    Range("U12") = contador_ze
+    
+    MsgBox "Somatório por Fornecedor realizada", vbInformation
+End Sub
+
+Sub limpa_planilha()
+
+'Sub simples para limpara a planilha
+Sheets("Pedidos Atrasados").Select
+Range("A2:AA1048576").ClearContents
+
+
+End Sub
+
+Sub Envia_Emails()
+    'Salva e anexa a planilha no outlook
+    'Definindo as variaveis
+    Dim EnviarPara As String
+    Dim Mensagem As String
+    Dim caminho As String
+    Dim Texto As String
+    Dim OutlookApp As Object
+    Dim OutlookMail As Object
+    Set OutlookApp = CreateObject("Outlook.Application")
+    Set OutlookMail = OutlookApp.CreateItem(0)
+    With OutlookMail
+        ActiveWorkbook.Save
+        caminho = ThisWorkbook.Path & "\" & "TabelaRudnei.xlsm"
+        .Display
+        Signature = .HTMLbody
+        .To = EnviarPara
+        .CC = ""
+        .BCC = ""
+        .Subject = Mensagem
+        .Attachments.Add caminho
+        '.HTMLbody = "Bom dia" & "<br>" & Texto & "<br>" & Signature
+        .Display                                 ' para envia o email diretamente defina o código  .Send
+    End With
+    Set OutlookMail = Nothing
+    Set OutlookApp = Nothing
+End Sub
+
+
