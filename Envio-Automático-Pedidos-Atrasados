@@ -1,0 +1,247 @@
+PT-BR
+'Programa criado para enviar pedidos atrasados diretamente para o fornecedor
+'Script feito no VBAScript
+'Usuário preenche a Aba “Pedidos Atrasados” > Seleciona a aba "Menu" > Faz a seleção a partir dos botões existentes
+'EN
+Script created to send late orders directly to the supplier
+'Created on VBAScript
+" User fill up the tab "Pedidos Atrasados" > Select the tab "Menu" > Make the selection from the existing buttons
+
+
+'Sub utilizado para criar uma senha ao abrir o arquivo
+Sub auto_open()
+
+    'Criando a variavel do tipo String
+    Dim info As String
+        Sheets("Menu").Select
+        
+    'Verificando o conteudo da variavel digitada
+    info = InputBox("Digite a senha")
+    
+    'UCase utilizado para ser possível utilizar a senha em maiusculo ou minusculo
+    If UCase(info) = "ABC" Then
+        Select Case Hour(Now)
+            Case Is < 12
+                MsgBox "Bom dia"
+            Case Is < 18
+                MsgBox "Boa tarde"
+            Case Else
+                MsgBox "Boa noite"
+        End Select
+                    
+        'Mensagem de boas-vindas e seleção da planilha
+        MsgBox "Bem-Vindo ao sistema", vbInformation
+        'Limpeza dos dados anteriores
+        Sheets("PedidosAtrasados").Select
+        Range("A2:H1048576").ClearContents
+    Else
+        MsgBox "Senha invalida", vbCritical
+        Application.Quit
+    End If
+    
+'Selecao do menu principal
+Sheets("Menu").Select
+End Sub
+
+Sub verifica_fornecedor()
+    'Sub para verificar se os pedidos tem nos fornecedores
+    'Criação das variaveis
+    Dim EnviarPara1 As String
+    Dim EnviarPara2 As String
+    Dim Enviarpara3 As String
+    Dim teste_numero_fornecedor As String
+    Dim numero_fornecedor_anterior As String
+    Dim coluna_numero_fornecedor As Integer
+    Dim ultima_linha As Integer
+            
+    'Escolhendo a aba correta
+    Sheets("PedidosAtrasados").Select
+    
+    'Realizando a filtragem dos dados para mostrar em ordem descendente
+    Range("A2:H1048576").Sort key1:=Range("A2"), Order1:=xlDescending, key2:=Range("H1048576")
+    Range("A2").Select
+    Range("A2:H2").Copy
+    
+    'Variaveis do sistema
+    teste_numero_fornecedor = ActiveCell
+    numero_fornecedor_anterior = teste_numero_fornecedor
+    coluna_numero_fornecedor = ActiveCell.Row
+    
+    
+        'Verificação de todas as celulas para coordenar os pedidos
+        Do Until ActiveCell = ""
+            Sheets("Fornecedores").Select
+            Range("A2").Select
+                Do Until ActiveCell = ""
+                        If teste_numero_fornecedor = ActiveCell Then
+                            
+                            'novas variaveis para o email
+                            EnviarPara1 = ActiveCell.Offset(0, 4)
+                            EnviarPara2 = ActiveCell.Offset(0, 5)
+                            Enviarpara3 = ActiveCell.Offset(0, 6)
+                            
+                            'Seleciona a aba Teste e determina a variavel ultima_linha a partir da ultima linha
+                            Sheets("Teste").Select
+                            ultima_linha = Range("A1048576").End(xlUp).Row
+                            Range("A" & ultima_linha + 1, "H" & ultima_linha + 1).PasteSpecial xlValues
+                        
+                        End If
+                    Sheets("Fornecedores").Select
+                    ActiveCell.Offset(1, 0).Select
+                Loop
+                
+        'Desce para a linha debaixo
+        coluna_numero_fornecedor = coluna_numero_fornecedor + 1
+        Sheets("PedidosAtrasados").Select
+        Range("A" & coluna_numero_fornecedor).Select
+        'Copia os pedidos que temos um fornecedor na base
+        Range("A" & coluna_numero_fornecedor, "H" & coluna_numero_fornecedor).Copy
+        'Novas váriaveis
+        teste_numero_fornecedor = ActiveCell
+        coluna_numero_fornecedor = ActiveCell.Row
+        
+        'Condição para verificar se é outro fornecedor
+        'Se for outro fornecedor, arquivo será enviado e fechado
+        If teste_numero_fornecedor <> numero_fornecedor_anterior Then
+            'Seleciona a Aba correta
+            Sheets("Teste").Select
+            Range("A1:I1").Select
+            Range(ActiveCell.End(xlDown), ActiveCell.End(xlToRight)).Copy
+            'Cria um novo arquivo
+            Workbooks.Add
+            Range("a1").PasteSpecial
+            'Deixa o tamanho das colunas correto
+            Columns("A:I").EntireColumn.AutoFit
+            'Atualiza os dados
+            numero_fornecedor_anterior = teste_numero_fornecedor
+            nome = Range("B2")
+            'Salva os arquivos na pasta p7000-Compras-PedidoRudnei-NovaFerramenta com data e hora
+            Application.DisplayAlerts = False
+            ActiveWorkbook.SaveAs ("\\p7000\Compras\Pedidos Rudnei\NovaFerramenta\ " & nome & Format(Now(), "DD-MMM-YYYY hh mm AMPM"))
+            ActiveWorkbook.Close
+            'Vai para a sub de enviar emails
+            Call Envia_Emails(EnviarPara1, EnviarPara2, Enviarpara3, nome)
+                        
+            'Retorna para a tabela principal
+            Workbooks("NovaFerramenta").Activate
+            Sheets("Teste").Select
+            Range("A2").Select
+            Range(ActiveCell.End(xlDown), ActiveCell.End(xlToRight)).ClearContents
+
+        
+            'Desce para a linha debaixo
+            Sheets("PedidosAtrasados").Select
+            Range("A" & coluna_numero_fornecedor).Select
+            'Copia os pedidos que temos um fornecedor na base
+            Range("A" & coluna_numero_fornecedor, "H" & coluna_numero_fornecedor).Copy
+            'Novas váriaveis
+            teste_numero_fornecedor = ActiveCell
+            coluna_numero_fornecedor = ActiveCell.Row
+        
+        End If
+               
+        Loop
+'Retornar para a planilha Menu
+Sheets("Menu").Select
+Range("A1").Select
+MsgBox ("Macro Finalizada"), vbInformation
+ 
+End Sub
+
+'Sub utilizada para abrir o outlook para ser enviado a planilha
+Sub Envia_Emails(ByVal EnviarPara1 As String, ByVal EnviarPara2 As String, ByVal Enviarpara3 As String, ByVal nome As String)
+    
+    Dim Mensagem As String
+    Dim caminho As String
+    Dim Texto As String
+    Dim OutlookApp As Object
+    Dim OutlookMail As Object
+    Set OutlookApp = CreateObject("Outlook.Application")
+    Set OutlookMail = OutlookApp.CreateItem(0)
+    With OutlookMail
+    
+        'caminho no pc em que está a planilha
+        caminho = "\\p7000\Compras\Pedidos Rudnei\NovaFerramenta\ " & nome & Format(Now(), "DD-MMM-YYYY hh mm AMPM") & ".xlsx"
+        'abrir o outlook
+        .Display
+        Signature = .HTMLbody
+        'destinatários
+        .To = EnviarPara1 & ";" & EnviarPara2 & ";" & Enviarpara3
+        .CC = ""
+        .BCC = ""
+        .Subject = "Mensagem de Pedidos em Aberto"
+        'salva em anexo o arquivo atual
+        .Attachments.Add caminho
+        '.Display                                 ' para envia o email diretamente defina o código  .Send
+        .Send
+        
+    End With
+    Set OutlookMail = Nothing
+    Set OutlookApp = Nothing
+End Sub
+    
+'Sub para contar a quantidade de e-mails que será enviado
+Sub contador_emails()
+
+    Dim contador_emails As Integer
+    Dim verificacao1 As String
+    Dim verificacao2 As String
+    
+    'Seleciona a aba PedidosAtrasados na célula A2
+    Sheets("PedidosAtrasados").Select
+    Range("A2").Select
+    
+        Do Until ActiveCell = ""
+            'verificação feita para o contador
+            verificacao1 = ActiveCell.Offset(-1, 0)
+            verificacao2 = ActiveCell
+        
+            If verificacao1 <> verificacao2 Then
+                contador_emails = contador_emails + 1
+            End If
+            ActiveCell.Offset(1, 0).Select
+        Loop
+    'Escolhe a aba final e envia uma mensagem de alerta
+    Sheets("Menu").Select
+    MsgBox ("Será enviado " & contador_emails & " e-mails")
+End Sub
+
+Sub verifica_contatos()
+
+    Dim ultima_linha As Integer
+    Dim verificacao1 As String
+    Dim numero_linhas As Integer
+    Dim contador As Integer
+    
+    'macro para verificar se temos algum fornecedor fora dos contatos
+    Sheets("PedidosAtrasados").Select
+    Range("A2").Select
+    verificacao1 = Range("A2")
+    
+        Do Until ActiveCell = ""
+        Sheets("Fornecedores").Select
+        'quantidade de fornecedores
+        ultima_linha = (Range("A1048576").End(xlUp).Row) - 1
+        Range("A2").Select
+        
+        'Verificação para incremento do contador
+        Do Until ActiveCell = verificacao1
+                If ActiveCell <> "" Then
+                    contador = contador + 1
+                    ActiveCell.Offset(1, 0).Select
+                            If contador = ultima_linha Then
+                                MsgBox ("Fornecedor de número " & verificacao1 & " não está na lista de contatos")
+                            End
+                            End If
+                End If
+        Loop
+    
+    
+    'Retorna para a aba PedidosAtrasados e coloca o contador no 0
+    Sheets("PedidosAtrasados").Select
+    ActiveCell.Offset(1, 0).Select
+    verificacao1 = ActiveCell
+    contador = 0
+    Loop
+    MsgBox ("Todos os fornecedores estão na lista de contatos"), vbInformation
+End Sub
